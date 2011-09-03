@@ -1,4 +1,4 @@
-var controller = require("./controller")
+var sys = require("sys");
 
 var views = exports;
 
@@ -12,3 +12,7 @@ views.badass_func = function(request, response){
     response.end("badass page");
 }
 
+views.notepad_func = function(request, response){
+    response.writeHead(200);
+    sys.pump(request, response);
+}

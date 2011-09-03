@@ -8,14 +8,13 @@ var http = require("http"),
      * to the different View functions, defined
      * according to the urls module.
      */
-    controller = require("./controller"),
-    urls = require("./urls");
+    controller = require("./controller");
 
 /* Initialize the mapping of request to View functions
  * in the controller, based on the mappings defined in
  * urls.js
  */
-controller.init(urls.urlpatterns);
+controller.init();
 
 // Start the server.
 var server = http.createServer(controller.handler).listen(8000);

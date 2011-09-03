@@ -1,5 +1,6 @@
 var url = require("url"),
-    sys = require("sys");
+    sys = require("sys"),
+    urls = require("./urls");
 
 var controller = exports;
 
@@ -12,16 +13,16 @@ var controller = exports;
  * HTTP methods - GET/PUT, etc in the same
  * table.
  */
-urlToViewFunction = {};
+var urlToViewFunction = {};
 var http_methods = ["GET", "POST", "PUT", "DELETE", "HEAD"];
-urlToViewFunctionMap = {};
+var urlToViewFunctionMap = {};
 
 for (var idx in http_methods){
     urlToViewFunction[http_methods[idx]] = urlToViewFunctionMap;
 }
 
 // 404 Not Found function
-notFound404 = function(request, response){
+controller.notFound404 = function(request, response){
     response.writeHead(404);
     response.end("Page Not Found, Sorry!");
 };
@@ -38,9 +39,9 @@ controller.mapper = function(path, handler){
  * based on the argument of mappings passed
  * to it ( usually from urls.js )
  */
-controller.init = function(map){
-    for (var urlpath in map)
-        controller.mapper(urlpath, map[urlpath]);
+controller.init = function(){
+    for (var urlpath in urls.urlpatterns)
+        controller.mapper(urlpath, urls.urlpatterns[urlpath]);
 }
 
 /*
@@ -53,6 +54,6 @@ controller.init = function(map){
  */
 controller.handler = function(request, response){
     sys.puts("Request for :" + url.parse(request.url).pathname + " handled by:" + urlToViewFunction[request.method][url.parse(request.url).pathname]);
-    var handler = urlToViewFunction[request.method][url.parse(request.url).pathname] || notFound404;
+    var handler = urlToViewFunction[request.method][url.parse(request.url).pathname] || controller.notFound404;
     handler(request, response);
 };
