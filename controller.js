@@ -13,25 +13,18 @@ var controller = exports;
  * HTTP methods - GET/PUT, etc in the same
  * table.
  */
-var urlToViewFunction = {};
+var url_dispatcher = {};
 var http_methods = ["GET", "POST", "PUT", "DELETE", "HEAD"];
-var urlToViewFunctionMap = {};
-
 for (var idx in http_methods){
-    urlToViewFunction[http_methods[idx]] = urlToViewFunctionMap;
+    url_dispatcher[http_methods[idx]] = url_dispatcher;
 }
 
-// 404 Not Found function
-controller.notFound404 = function(request, response){
-    response.writeHead(404);
-    response.end("Page Not Found, Sorry!");
-};
 
 /* Function that populates the above map
  * based on the mappings in urls.py
  */
 controller.mapper = function(path, handler){
-        urlToViewFunctionMap[path] = handler;
+        url_dispatcher[path] = handler;
 }
 
 
@@ -44,6 +37,12 @@ controller.init = function(){
         controller.mapper(urlpath, urls.urlpatterns[urlpath]);
 }
 
+/* 404 Not Found function */
+controller.notFound404 = function(request, response){
+    response.writeHead(404);
+    response.end("Page Not Found, Sorry!");
+};
+
 /*
  * This function serves as a generic URL dispatcher
  * Based on the request method ( GET/POST/PUT/DELETE )
@@ -53,7 +52,7 @@ controller.init = function(){
  * HTTP request made to the server.
  */
 controller.handler = function(request, response){
-    sys.puts("Request for :" + url.parse(request.url).pathname + " handled by:" + urlToViewFunction[request.method][url.parse(request.url).pathname]);
-    var handler = urlToViewFunction[request.method][url.parse(request.url).pathname] || controller.notFound404;
+    sys.puts("Request for :" + url.parse(request.url).pathname + " handled by:" + url_dispatcher[request.method][url.parse(request.url).pathname]);
+    var handler = url_dispatcher[request.method][url.parse(request.url).pathname] || controller.notFound404;
     handler(request, response);
 };
