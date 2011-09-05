@@ -11,14 +11,12 @@ var controller = exports;
 
 /* We currently store the mapping for all
  * HTTP methods - GET/PUT, etc in the same
- * table.
+ * table. The cache is simply to cache the
+ * regex-es, so that we don't have to compile
+ * them everytime.
  */
 var url_dispatcher = {};
-var http_methods = ["GET", "POST", "PUT", "DELETE", "HEAD"];
-for (var idx in http_methods){
-    url_dispatcher[http_methods[idx]] = url_dispatcher;
-}
-
+var url_dispatcher_cache = {};
 
 /* Function that populates the above map
  * based on the mappings in urls.py
@@ -50,9 +48,26 @@ controller.notFound404 = function(request, response){
  * This is the function provided to the runserver.js
  * file's createServer function, and is invoked for each
  * HTTP request made to the server.
+ * Looks in the cache for a matching regex, and if not found,
+ * looks in the original table and adds its entries to the
+ * regex cache.
  */
 controller.handler = function(request, response){
-    sys.puts("Request for :" + url.parse(request.url).pathname + " handled by:" + url_dispatcher[request.method][url.parse(request.url).pathname]);
-    var handler = url_dispatcher[request.method][url.parse(request.url).pathname] || controller.notFound404;
-    handler(request, response);
+    var pathname = url.parse(request.url).pathname;
+    sys.puts("Request for : " + pathname);
+    for(var path in url_dispatcher_cache){
+        var url_regex = url_dispatcher_cache[path][0];
+        var match = false;
+        if((match = url_regex.exec(pathname)))
+            return url_dispatcher_cache[path][1](request, response,
+                    match.slice(1, match.length));
+    }
+    for(var path in url_dispatcher){
+        var url_regex = new RegExp(path);
+        url_dispatcher_cache[path] = [url_regex, url_dispatcher[path]];
+        var match = false;
+        if((match = url_regex.exec(pathname)))
+            return url_dispatcher[path](request, response, match.slice(1, match.length));
+    }
+    return controller.notFound404(request, response);
 };

@@ -2,9 +2,15 @@ var sys = require("sys");
 
 var views = exports;
 
-views.index_func = function(request, response){
+/*
+ * Demonstrates extra arguments being passed to the
+ * view function based on the regexp being matched in
+ * the urls.js mapping, a-la django.
+ */
+views.index_func = function(request, response, match){
     response.writeHead(200);
-    response.end("index page");
+    var str = "index page ";
+    response.end(str + match);
 }
 
 views.badass_func = function(request, response){
